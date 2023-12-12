@@ -9,7 +9,8 @@ import (
 
 type Config struct {
 	GRPC     GRPCConfig    `yaml:"grpc"`
-	tokenTTL time.Duration `yaml:"token_ttl" env-requeired:"true"`
+	TokenTTL time.Duration `yaml:"token_ttl" env-requeired:"true"`
+	Env      string        `yaml:"env"`
 }
 
 type GRPCConfig struct {
