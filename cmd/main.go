@@ -5,6 +5,8 @@ import (
 	"authService/internal/config"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 const (
@@ -24,7 +26,14 @@ func main() {
 
 	application := app.NewApp(log, cfg.GRPC.Port, cfg.TokenTTL)
 
-	application.GRPCServer.Run()
+	go application.GRPCServer.Run()
+
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
+
+	<-stop
+
+	application.GRPCServer.Stop()
 }
 
 func initLogger(env string) *slog.Logger {
