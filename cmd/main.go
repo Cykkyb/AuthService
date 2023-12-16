@@ -3,6 +3,7 @@ package main
 import (
 	"authService/internal/app"
 	"authService/internal/config"
+	"authService/internal/lib/logger"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -37,15 +38,13 @@ func main() {
 }
 
 func initLogger(env string) *slog.Logger {
-	var log *slog.Logger
-
-	switch env {
-	case envLocal:
-		log = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
-	case envDev:
-		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
-	case envProd:
-		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelError}))
+	opts := logger.PrettyHandlerOptions{
+		SlogOpts: slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		},
 	}
+	handler := logger.NewPrettyHandler(os.Stdout, opts)
+	log := slog.New(handler)
+
 	return log
 }
