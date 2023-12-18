@@ -19,10 +19,10 @@ const (
 func main() {
 	cfg := config.MustLoadConfig()
 
-	log := initLogger(cfg.Env)
-
-	log.Info("Starting server...",
+	log := initLogger()
+	log.Info("Config loaded",
 		slog.String("env", cfg.Env),
+		slog.Int("port", cfg.GRPC.Port),
 	)
 
 	application := app.NewApp(log, cfg.GRPC.Port, cfg.TokenTTL)
@@ -37,7 +37,7 @@ func main() {
 	application.GRPCServer.Stop()
 }
 
-func initLogger(env string) *slog.Logger {
+func initLogger() *slog.Logger {
 	opts := logger.PrettyHandlerOptions{
 		SlogOpts: slog.HandlerOptions{
 			Level: slog.LevelDebug,
