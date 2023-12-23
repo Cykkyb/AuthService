@@ -1,21 +1,54 @@
 package app
 
 import (
-	grpcapp "authService/internal/app/grpc"
+	"authService/internal/handler"
+	"authService/internal/repository"
+	"authService/internal/service"
+	"fmt"
+	"github.com/jmoiron/sqlx"
+	"google.golang.org/grpc"
 	"log/slog"
+	"net"
 	"time"
 )
 
 type App struct {
-	GRPCServer *grpcapp.App
+	log        *slog.Logger
+	gRPCServer *grpc.Server
+	port       int
 }
 
-func NewApp(log *slog.Logger, port int, tokenTTL time.Duration) *App {
+func NewApp(log *slog.Logger, port int, tokenTTL time.Duration, db *sqlx.DB) *App {
+	gRPCServer := grpc.NewServer()
 
-	gRPCApp := grpcapp.NewApp(log, port)
+	repo := repository.NewRepository(db, log)
+	services := service.NewService(repo, log)
+	handler.RegisterServerAPI(gRPCServer, services)
 
 	return &App{
-		GRPCServer: gRPCApp,
+		log:        log,
+		gRPCServer: gRPCServer,
+		port:       port,
+	}
+}
+
+func (a *App) Run() error {
+	l, err := net.Listen("tcp", fmt.Sprintf(":%d", a.port))
+	if err != nil {
+		return fmt.Errorf("%s: %w", "grpc.Run", err)
 	}
 
+	a.log.Info("Starting grpc")
+
+	if err = a.gRPCServer.Serve(l); err != nil {
+		return fmt.Errorf("%s: %w", "grpc.Run", err)
+	}
+
+	return nil
+}
+
+func (a *App) Stop() {
+	a.log.Info("Stopping grpc")
+
+	a.gRPCServer.GracefulStop()
 }

@@ -4,6 +4,8 @@ import (
 	"authService/internal/app"
 	"authService/internal/config"
 	"authService/internal/lib/logger"
+	"authService/internal/repository"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -25,16 +27,28 @@ func main() {
 		slog.Int("port", cfg.GRPC.Port),
 	)
 
-	application := app.NewApp(log, cfg.GRPC.Port, cfg.TokenTTL)
+	db, err := repository.ConnectDb(repository.Config{
+		Host:     cfg.DB.Host,
+		Port:     cfg.DB.Port,
+		Username: cfg.DB.Username,
+		Password: cfg.DB.Password,
+		DBname:   cfg.DB.DBname,
+		SSL:      cfg.DB.SSL,
+	})
+	if err != nil {
+		panic(fmt.Sprintf("failed to connect to db: %s", err))
+	}
 
-	go application.GRPCServer.Run()
+	application := app.NewApp(log, cfg.GRPC.Port, cfg.TokenTTL, db)
 
-	stop := make(chan os.Signal, 1)
+	go application.Run()
+
+	stop := make(chan os.Signal)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
 
 	<-stop
 
-	application.GRPCServer.Stop()
+	application.Stop()
 }
 
 func initLogger() *slog.Logger {

@@ -11,11 +11,21 @@ type Config struct {
 	GRPC     GRPCConfig    `yaml:"grpc"`
 	TokenTTL time.Duration `yaml:"token_ttl" env-requeired:"true"`
 	Env      string        `yaml:"env"`
+	DB       DBConfig      `yaml:"DBConfig"`
 }
 
 type GRPCConfig struct {
 	Port    int           `yaml:"port"`
 	Timeout time.Duration `yaml:"timeout"`
+}
+
+type DBConfig struct {
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+	DBname   string `yaml:"dbname"`
+	SSL      string `yaml:"sslmode"`
 }
 
 func MustLoadConfig() *Config {
