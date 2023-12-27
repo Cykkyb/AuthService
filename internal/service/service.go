@@ -5,20 +5,21 @@ import (
 	"context"
 	"github.com/Cykkyb/proto/gen/go/auth"
 	"log/slog"
+	"time"
 )
 
 type Auth interface {
-	Login(ctx context.Context, email, password string, appId int) (*auth.LoginResponse, error)
-	Register(ctx context.Context, req *auth.RegisterRequest) (*auth.RegisterResponse, error)
-	IsAdmin(ctx context.Context, req *auth.IsAdminRequest) (*auth.IsAdminResponse, error)
+	Login(ctx context.Context, email, password string, appId int) (string, error)
+	Register(ctx context.Context, email, password string) (int32, error)
+	IsAdmin(ctx context.Context, req *auth.IsAdminRequest) (bool, error)
 }
 
 type Service struct {
 	Auth
 }
 
-func NewService(repo repository.Auth, log *slog.Logger) *Service {
+func NewService(repo repository.AuthRepository, log *slog.Logger, tokenTTl time.Duration) *Service {
 	return &Service{
-		Auth: NewAuthService(repo, log),
+		Auth: NewAuthService(repo, log, tokenTTl),
 	}
 }

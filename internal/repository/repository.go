@@ -1,24 +1,24 @@
 package repository
 
 import (
+	"authService/internal/entity"
 	"context"
-	"github.com/Cykkyb/proto/gen/go/auth"
 	"github.com/jmoiron/sqlx"
-	"log/slog"
 )
 
-type Auth interface {
-	Login(ctx context.Context, req *auth.LoginRequest) (*auth.LoginResponse, error)
-	Register(ctx context.Context, req *auth.RegisterRequest) (*auth.RegisterResponse, error)
-	IsAdmin(ctx context.Context, req *auth.IsAdminRequest) (*auth.IsAdminResponse, error)
+type AuthRepository interface {
+	Register(ctx context.Context, email, passwordHash string) (int32, error)
+	IsAdmin(ctx context.Context, userId int32) (bool, error)
+	GetUser(ctx context.Context, email string) (*entity.User, error)
+	GetApp(ctx context.Context, appId int) (*entity.App, error)
 }
 
 type Repository struct {
-	Auth
+	AuthRepository
 }
 
-func NewRepository(db *sqlx.DB, log *slog.Logger) *Repository {
+func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{
-		Auth: NewAuthPostgres(db, log),
+		AuthRepository: NewAuthPostgres(db),
 	}
 }

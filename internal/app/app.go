@@ -21,8 +21,8 @@ type App struct {
 func NewApp(log *slog.Logger, port int, tokenTTL time.Duration, db *sqlx.DB) *App {
 	gRPCServer := grpc.NewServer()
 
-	repo := repository.NewRepository(db, log)
-	services := service.NewService(repo, log)
+	repo := repository.NewRepository(db)
+	services := service.NewService(repo, log, tokenTTL)
 	handler.RegisterServerAPI(gRPCServer, services)
 
 	return &App{
