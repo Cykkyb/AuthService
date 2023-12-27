@@ -46,10 +46,9 @@ func (s *AuthService) Login(ctx context.Context, email, password string, appId i
 		s.log.Error("failed to getUser", slog.String("email", email))
 		return "", err
 	}
-
-	passwordHash := generatePasswordHash(password)
-	if user.PasswordHash != passwordHash {
-		s.log.Warn("wrong password", slog.String("email", email))
+	err = checkPassword(user.PasswordHash, password)
+	if err != nil {
+		s.log.Error("wrong password", slog.String("email", email))
 
 		return "", ErrInvalidCredentials
 	}
@@ -80,7 +79,7 @@ func (s *AuthService) Register(ctx context.Context, email, password string) (int
 			return 0, repository.ErrUserExists
 		}
 
-		s.log.Error("failed to register user", slog.String("email", email))
+		s.log.Error("failed to register user", slog.String("email", email), slog.String("Error", err.Error()))
 		return 0, err
 	}
 	return userId, nil
@@ -102,4 +101,8 @@ func generatePasswordHash(password string) string {
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password+salt), bcrypt.DefaultCost)
 
 	return string(hashedPassword)
+}
+
+func checkPassword(hashedPassword, password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password+salt))
 }

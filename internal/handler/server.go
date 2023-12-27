@@ -75,7 +75,7 @@ func (s *serverAPI) IsAdmin(
 		return nil, status.Error(codes.InvalidArgument, "missing userId")
 	}
 
-	isAdmin, err := s.auth.IsAdmin(ctx, req)
+	isAdmin, err := s.auth.IsAdmin(ctx, req.UserId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
