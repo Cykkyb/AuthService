@@ -5,6 +5,6 @@ ENV GOPATH=/
 
 COPY ./ ./
 
-RUN go build -o main-app ./cmd/main.go
+RUN go build  -o main-app ./cmd/main.go
 
-CMD ["./main-app"]
+CMD ["./main-app", "--config=config/conf.yaml"]
